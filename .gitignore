@@ -1,0 +1,112 @@
+# Environment variables and secrets
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+*.env
+
+# Personal documents and profiles
+profile.pdf
+profil.pdf
+*.pdf
+profile_memory.py
+personal_*.py
+*_personal.py
+
+# Credentials and API keys
+config.ini
+secrets.json
+credentials.json
+api_keys.txt
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Personal information files
+personal_info.txt
+contact_info.txt
+addresses.txt
+phone_numbers.txt
+emails.txt
+*_personal.txt
+*_private.txt
+
+# Resume and CV files
+resume.*
+cv.*
+*_resume.*
+*_cv.*
+
+# Financial information
+bank_*.txt
+financial_*.txt
+tax_*.txt
+*_financial.*
+
+# Medical information
+medical_*.txt
+health_*.txt
+*_medical.*
+
+# Legal documents
+legal_*.txt
+contracts_*.txt
+*_legal.*
+
+# Backup files
+*.bak
+*.backup
+*_backup.*
+
+# Temporary files
+*.tmp
+*.temp
+*_temp.*
+
+# Logs that might contain personal info
+*.log
+logs/
+log/
+
+# Database files that might contain personal data
+*.db
+*.sqlite
+*.sqlite3
+personal_*.db
+
+# Cache directories
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows specific
+desktop.ini
+$RECYCLE.BIN/
+
+# Personal notes and journals
+notes.txt
+journal.txt
+diary.txt
+*_notes.txt
+*_journal.txt
