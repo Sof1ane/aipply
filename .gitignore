@@ -36,7 +36,6 @@ emails.txt
 # Resume and CV files
 resume.*
 cv.*
-*_resume.*
 *_cv.*
 
 # Financial information
