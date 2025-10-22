@@ -16,6 +16,7 @@ from typing import Dict, List, Optional, Any
 
 from llm_client import LLMClient
 from pdf_text_extractor import extract_pdf_text_any
+from linkedin_integration import LinkedInIntegration
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from weasyprint import HTML
 
@@ -250,16 +251,18 @@ class AIResumeGenerator:
         if os.path.exists(self.profile_file):
             choice = self.get_user_choice(
                 "Profile found. What would you like to do?",
-                ["Use existing profile", "Create new profile from PDF", "Create new profile manually"]
+                ["Use existing profile", "Import from LinkedIn", "Create new profile from PDF", "Create new profile manually"]
             )
         else:
             choice = self.get_user_choice(
                 "How would you like to create your profile?",
-                ["Upload PDF resume", "Create manually"]
+                ["Import from LinkedIn", "Upload PDF resume", "Create manually"]
             )
             
         if choice == "Use existing profile":
             self._load_existing_profile()
+        elif "LinkedIn" in choice:
+            self._create_profile_from_linkedin()
         elif "PDF" in choice:
             self._create_profile_from_pdf()
         else:
@@ -274,6 +277,44 @@ class AIResumeGenerator:
         except Exception as e:
             print(f"❌ Error loading profile: {e}")
             self._create_profile_manually()
+    
+    def _create_profile_from_linkedin(self):
+        """Create profile from LinkedIn data."""
+        self.print_header("LINKEDIN PROFILE IMPORT")
+        
+        linkedin = LinkedInIntegration()
+        
+        # Check if API credentials are available
+        if linkedin.client_id and linkedin.client_secret:
+            choice = self.get_user_choice(
+                "LinkedIn import method:",
+                ["Use LinkedIn API (OAuth)", "Manual import (guided)"]
+            )
+            
+            if choice == "Use LinkedIn API (OAuth)":
+                profile_data = linkedin.start_oauth_flow()
+            else:
+                profile_data = linkedin.manual_linkedin_import()
+        else:
+            print("ℹ️ LinkedIn API credentials not configured.")
+            print("Using manual import method...")
+            profile_data = linkedin.manual_linkedin_import()
+        
+        if profile_data:
+            self.profile = profile_data
+            self._save_profile()
+            print("✅ Profile created from LinkedIn!")
+            
+            # Ask user to review and add missing information
+            self._review_and_complete_profile()
+        else:
+            print("❌ Failed to import LinkedIn profile.")
+            fallback_choice = self.get_user_choice(
+                "What would you like to do?",
+                ["Try manual profile creation", "Exit"]
+            )
+            if fallback_choice == "Try manual profile creation":
+                self._create_profile_manually()
             
     def _create_profile_from_pdf(self):
         """Create profile from PDF resume."""
