@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ profile.identity.name }} - Resume</title>
+  <link rel="stylesheet" href="resume_modern.css" />
+</head>
+<body>
+  <div class="resume">
+    <aside class="sidebar">
+      <div class="identity">
+        <div class="name">{{ profile.identity.name }}</div>
+        <div class="title">{{ profile.identity.title }}</div>
+      </div>
+      <div class="contact">
+        {% if profile.identity.email %}<div>{{ profile.identity.email }}</div>{% endif %}
+        {% if profile.identity.phone %}<div>{{ profile.identity.phone }}</div>{% endif %}
+        {% if profile.identity.location %}<div>{{ profile.identity.location }}</div>{% endif %}
+      </div>
+      {% if skills %}
+      <div class="skills">
+        <h3>Skills</h3>
+        <div class="chips">
+          {% for s in (skills.technical or []) %}<span class="chip">{{ s }}</span>{% endfor %}
+          {% for s in (skills.soft or []) %}<span class="chip soft">{{ s }}</span>{% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      {% if profile.languages %}
+      <div class="languages">
+        <h3>Languages</h3>
+        <div class="list">{{ ' • '.join(profile.languages) }}</div>
+      </div>
+      {% endif %}
+    </aside>
+    <main class="main">
+      <section>
+        <h2>Profile</h2>
+        <p>{{ summary }}</p>
+      </section>
+      {% if experiences %}
+      <section>
+        <h2>Experience</h2>
+        {% for exp in experiences %}
+        <div class="experience">
+          <div class="head">{{ exp.role }} — {{ exp.company }}</div>
+          <div class="meta">{{ exp.location }} • {{ exp.dates }}</div>
+          <ul>
+            {% for m in exp.missions %}<li>{{ m }}</li>{% endfor %}
+          </ul>
+        </div>
+        {% endfor %}
+      </section>
+      {% endif %}
+      {% if profile.education %}
+      <section>
+        <h2>Education</h2>
+        {% for edu in profile.education %}
+        <div class="edu">
+          <div class="degree">{{ edu.degree }}</div>
+          <div class="school">{{ edu.school }} • {{ edu.dates }}</div>
+        </div>
+        {% endfor %}
+      </section>
+      {% endif %}
+    </main>
+  </div>
+</body>
+</html>
+
+

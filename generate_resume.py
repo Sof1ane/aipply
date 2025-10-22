@@ -25,6 +25,7 @@ class ResumeGenerator:
         self.memory = ProfileMemory(path=profile_path)
         self.profile = self._load_profile()
         self.locale = 'en'
+        self.user_info = {}
 
     def _load_profile(self):
         try:
@@ -38,6 +39,44 @@ class ResumeGenerator:
 
     def _generate(self, prompt: str) -> str:
         return self.client.generate(prompt)
+
+    def collect_user_info(self):
+        """Collect additional user information for resume customization."""
+        print("\n" + "=" * 60)
+        print("   RESUME CUSTOMIZATION")
+        print("=" * 60)
+        print("Let's customize your resume with some additional information:")
+        print()
+        
+        # Get current profile info for reference
+        current_name = self.profile.get('identity', {}).get('name', '')
+        current_title = self.profile.get('identity', {}).get('title', '')
+        
+        print(f"Current profile: {current_name} - {current_title}")
+        print()
+        
+        # Collect user preferences
+        self.user_info['preferred_name'] = input(f"Preferred name for this resume (press Enter to use '{current_name}'): ").strip()
+        if not self.user_info['preferred_name']:
+            self.user_info['preferred_name'] = current_name
+            
+        self.user_info['preferred_title'] = input(f"Preferred job title for this resume (press Enter to use '{current_title}'): ").strip()
+        if not self.user_info['preferred_title']:
+            self.user_info['preferred_title'] = current_title
+            
+        self.user_info['email'] = input("Email address (press Enter to skip): ").strip()
+        self.user_info['phone'] = input("Phone number (press Enter to skip): ").strip()
+        self.user_info['location'] = input("Current location/city (press Enter to skip): ").strip()
+        self.user_info['linkedin'] = input("LinkedIn profile URL (press Enter to skip): ").strip()
+        self.user_info['website'] = input("Personal website/portfolio (press Enter to skip): ").strip()
+        
+        # Additional customization
+        print("\nAdditional customization:")
+        self.user_info['highlight_skills'] = input("Specific skills to highlight (comma-separated, press Enter to skip): ").strip()
+        self.user_info['custom_summary'] = input("Custom professional summary (press Enter to use AI-generated): ").strip()
+        
+        print("\n✅ User information collected!")
+        return self.user_info
 
     def detect_language(self, text: str) -> str:
         """Very light language hint using characters; fallback to English."""
@@ -75,6 +114,10 @@ Job title:"""
 
     def adapt_profile(self, offer: str):
         """Adapt the profile summary to the offer."""
+        # Use custom summary if provided by user
+        if self.user_info.get('custom_summary'):
+            return self.user_info['custom_summary']
+            
         lang = self.locale
         header = {
             'en': 'You are a resume writing expert.',
@@ -87,13 +130,19 @@ Job title:"""
             'fr': "Rédigez un paragraphe de 4-5 lignes mettant en avant les points les plus pertinents pour cette offre. Utilisez les mots-clés de l'offre. Soyez précis et percutant. Retournez UNIQUEMENT le paragraphe sans préface ni commentaires.",
             'es': 'Escribe un párrafo de 4-5 líneas destacando los puntos más relevantes para esta oferta. Usa palabras clave de la oferta. Sé específico e impactante. Devuelve SOLO el párrafo sin prefacio ni comentarios.',
         }[lang]
+        
+        # Add user's highlighted skills to the prompt if provided
+        skills_context = ""
+        if self.user_info.get('highlight_skills'):
+            skills_context = f"\nIMPORTANT: Make sure to highlight these specific skills: {self.user_info['highlight_skills']}"
+        
         prompt = f"""{header}
 
 {section_offer}
 {offer}
 
 FULL CANDIDATE PROFILE:
-{self.profile['long_profile']}
+{self.profile['long_profile']}{skills_context}
 
 {instruction}"""
 
@@ -252,8 +301,29 @@ Return ONLY this exact HTML-like format:
         content = []
 
         # Header
-        content.append(Paragraph(self.profile['identity']['name'], style_title))
-        content.append(Paragraph(self.profile['identity']['title'], style_subtitle))
+        name = self.user_info.get('preferred_name', self.profile['identity']['name'])
+        title = self.user_info.get('preferred_title', self.profile['identity']['title'])
+        
+        content.append(Paragraph(name, style_title))
+        content.append(Paragraph(title, style_subtitle))
+        
+        # Add contact information if provided
+        contact_info = []
+        if self.user_info.get('email'):
+            contact_info.append(self.user_info['email'])
+        if self.user_info.get('phone'):
+            contact_info.append(self.user_info['phone'])
+        if self.user_info.get('location'):
+            contact_info.append(self.user_info['location'])
+        if self.user_info.get('linkedin'):
+            contact_info.append(f"LinkedIn: {self.user_info['linkedin']}")
+        if self.user_info.get('website'):
+            contact_info.append(f"Website: {self.user_info['website']}")
+            
+        if contact_info:
+            contact_text = " • ".join(contact_info)
+            content.append(Paragraph(contact_text, style_subtitle))
+            
         content.append(Spacer(1, 8))
 
         # Profile
@@ -362,7 +432,10 @@ if __name__ == "__main__":
         profile_path=args.profile_file,
     )
 
-    print("📋 Paste the job offer below, then press Enter twice:")
+    # Collect user information for customization
+    generator.collect_user_info()
+
+    print("\n📋 Paste the job offer below, then press Enter twice:")
     print("-" * 60)
 
     lines = []

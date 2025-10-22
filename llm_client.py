@@ -1,6 +1,10 @@
 import os
 import requests
 from typing import Optional, Dict, Any
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 class LLMClient:
@@ -57,7 +61,7 @@ class ClaudeClient(LLMClient):
     def generate(self, prompt: str, **kwargs) -> str:
         headers = {
             "x-api-key": self.api_key,
-            "anthropic-version": "2023-06-01",
+            "anthropic-version": "2024-06-01",
             "content-type": "application/json",
         }
         payload = {

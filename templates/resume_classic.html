@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ profile.identity.name }} - Resume</title>
+  <link rel="stylesheet" href="resume_classic.css" />
+</head>
+<body>
+  <div class="resume">
+    <header class="header">
+      <h1 class="name">{{ profile.identity.name }}</h1>
+      <div class="title">{{ profile.identity.title }}</div>
+      <div class="contact">
+        {% set parts = [] %}
+        {% if profile.identity.email %}{% set _ = parts.append(profile.identity.email) %}{% endif %}
+        {% if profile.identity.phone %}{% set _ = parts.append(profile.identity.phone) %}{% endif %}
+        {% if profile.identity.location %}{% set _ = parts.append(profile.identity.location) %}{% endif %}
+        {{ ' • '.join(parts) }}
+      </div>
+    </header>
+
+    <section class="section">
+      <h2>Professional Summary</h2>
+      <p>{{ summary }}</p>
+    </section>
+
+    {% if experiences %}
+    <section class="section">
+      <h2>Professional Experience</h2>
+      {% for exp in experiences %}
+      <div class="experience">
+        <div class="exp-header">{{ exp.role }} — {{ exp.company }}</div>
+        <div class="exp-meta">{{ exp.location }} • {{ exp.dates }}</div>
+        <ul class="missions">
+          {% for m in exp.missions %}
+          <li>{{ m }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if skills %}
+    <section class="section">
+      <h2>Skills</h2>
+      <div class="skills">
+        {% for s in (skills.technical or []) %}<span class="chip">{{ s }}</span>{% endfor %}
+        {% for s in (skills.soft or []) %}<span class="chip chip-soft">{{ s }}</span>{% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {% if profile.education %}
+    <section class="section">
+      <h2>Education</h2>
+      {% for edu in profile.education %}
+      <div class="education">
+        <div class="degree">{{ edu.degree }}</div>
+        <div class="school">{{ edu.school }} • {{ edu.dates }}</div>
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if profile.languages %}
+    <section class="section">
+      <h2>Languages</h2>
+      <p>{{ ' • '.join(profile.languages) }}</p>
+    </section>
+    {% endif %}
+  </div>
+</body>
+</html>
+
+

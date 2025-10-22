@@ -1,0 +1,89 @@
+{
+  "identity": {
+    "name": "Not specified in resume",
+    "title": "Data / BI / AI Engineer"
+  },
+  "long_profile": "Versatile Data/BI/AI Engineer with strong technical expertise in Business Intelligence, Data Engineering, and Data Analytics. Demonstrates ability to bridge technical and business teams with clear communication skills. Experienced in data visualization, storytelling, and data-driven decision making. Shows technological curiosity in AI, cloud, and automation. Proven track record across multiple sectors including Energy, Industry, Aeronautics, Transport, Healthcare, IT, and Finance.",
+  "experiences": [
+    {
+      "company": "Enedis/Dalkia",
+      "location": "Not specified",
+      "role": "Data/BI Engineer",
+      "dates": "Not specified",
+      "missions": [
+        "Energy analysis and network performance monitoring",
+        "Electric charging station data analysis",
+        "Creation and maintenance of Power BI dashboards",
+        "Data pipeline development",
+        "ETL/ELT implementation"
+      ]
+    },
+    {
+      "company": "ArcelorMittal",
+      "location": "Not specified",
+      "role": "Data Engineer",
+      "dates": "Not specified",
+      "missions": [
+        "BI pipeline implementation",
+        "HR and sales monitoring",
+        "Production indicators tracking",
+        "Data warehouse maintenance",
+        "Process optimization"
+      ]
+    },
+    {
+      "company": "Cargolux/Swiss Airlines",
+      "location": "Not specified",
+      "role": "Application Support Analyst",
+      "dates": "Not specified",
+      "missions": [
+        "MRO applications maintenance",
+        "Operations optimization",
+        "Technical documentation creation",
+        "User support and training",
+        "Incident management via ServiceNow"
+      ]
+    }
+  ],
+  "skills": {
+    "technical": [
+      "SQL",
+      "Python",
+      "R",
+      "Tableau",
+      "Power BI",
+      "SAP BO",
+      "Alteryx",
+      "DBT",
+      "Airflow",
+      "Snowflake",
+      "Azure Data Factory",
+      "Databricks",
+      "Git/GitLab",
+      "ServiceNow",
+      "Machine Learning"
+    ],
+    "methodological": [
+      "Scientific analysis and rigor",
+      "Clear communication",
+      "Team collaboration",
+      "Problem solving",
+      "Project coordination",
+      "Critical thinking",
+      "Stress management",
+      "Innovation",
+      "Priority management"
+    ]
+  },
+  "education": "Not specified in resume",
+  "languages": [
+    "French (Fluent)",
+    "English (Fluent)",
+    "German (Basic)"
+  ],
+  "interests": [
+    "AI",
+    "Cloud Computing",
+    "Process Automation"
+  ]
+}
