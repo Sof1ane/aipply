@@ -24,6 +24,7 @@ class ResumeGenerator:
         self.client = LLMClient.from_config(backend=backend, model=model, ollama_url=ollama_url, anthropic_key=anthropic_key)
         self.memory = ProfileMemory(path=profile_path)
         self.profile = self._load_profile()
+        self.locale = 'en'
 
     def _load_profile(self):
         try:
@@ -38,9 +39,26 @@ class ResumeGenerator:
     def _generate(self, prompt: str) -> str:
         return self.client.generate(prompt)
 
+    def detect_language(self, text: str) -> str:
+        """Very light language hint using characters; fallback to English."""
+        lowered = (text or "").lower()
+        # naive hints
+        if any(word in lowered for word in [" el ", " la ", " los ", " las ", "experiencia", "habilidades", "idiomas"]):
+            return 'es'
+        if any(word in lowered for word in [" le ", " la ", " les ", "expérience", "compétences", "langues"]):
+            return 'fr'
+        return 'en'
+
     def extract_job_title(self, offer: str):
         """Extract job title from the offer text."""
-        prompt = f"""Extract the job title from this offer. Return ONLY the title, nothing else.
+        lang = self.detect_language(offer)
+        self.locale = lang
+        instruction = {
+            'en': 'Extract the job title from this offer. Return ONLY the title, nothing else.',
+            'fr': "Extrayez l'intitulé du poste de cette offre. Retournez UNIQUEMENT le titre, rien d'autre.",
+            'es': 'Extrae el título del puesto de esta oferta. Devuelve SOLO el título, nada más.',
+        }[lang]
+        prompt = f"""{instruction}
 
 Offer:
 {offer[:1000]}
@@ -57,17 +75,27 @@ Job title:"""
 
     def adapt_profile(self, offer: str):
         """Adapt the profile summary to the offer."""
-        prompt = f"""You are a resume writing expert.
+        lang = self.locale
+        header = {
+            'en': 'You are a resume writing expert.',
+            'fr': 'Vous êtes un expert en rédaction de CV.',
+            'es': 'Eres un experto en redacción de CV.',
+        }[lang]
+        section_offer = {'en': 'JOB OFFER:', 'fr': "OFFRE D'EMPLOI:", 'es': 'OFERTA DE EMPLEO:'}[lang]
+        instruction = {
+            'en': 'Write a 4-5 line profile paragraph highlighting the most relevant points for this offer. Use keywords from the offer. Be specific and impactful. Return ONLY the paragraph without any preface or comments.',
+            'fr': "Rédigez un paragraphe de 4-5 lignes mettant en avant les points les plus pertinents pour cette offre. Utilisez les mots-clés de l'offre. Soyez précis et percutant. Retournez UNIQUEMENT le paragraphe sans préface ni commentaires.",
+            'es': 'Escribe un párrafo de 4-5 líneas destacando los puntos más relevantes para esta oferta. Usa palabras clave de la oferta. Sé específico e impactante. Devuelve SOLO el párrafo sin prefacio ni comentarios.',
+        }[lang]
+        prompt = f"""{header}
 
-JOB OFFER:
+{section_offer}
 {offer}
 
 FULL CANDIDATE PROFILE:
 {self.profile['long_profile']}
 
-Write a 4-5 line profile paragraph highlighting the most relevant points for this offer.
-Use keywords from the offer. Be specific and impactful.
-Return ONLY the paragraph without any preface or comments."""
+{instruction}"""
 
         return self._generate(prompt)
 
@@ -75,9 +103,17 @@ Return ONLY the paragraph without any preface or comments."""
         """Select and adapt the most relevant experiences."""
         experiences_json = json.dumps(self.profile['experiences'], ensure_ascii=False, indent=2)
 
-        prompt = f"""You are a resume writing expert.
+        lang = self.locale
+        header = {
+            'en': 'You are a resume writing expert.',
+            'fr': 'Vous êtes un expert en rédaction de CV.',
+            'es': 'Eres un experto en redacción de CV.',
+        }[lang]
+        section_offer = {'en': 'JOB OFFER:', 'fr': "OFFRE D'EMPLOI:", 'es': 'OFERTA DE EMPLEO:'}[lang]
 
-JOB OFFER:
+        prompt = f"""{header}
+
+{section_offer}
 {offer}
 
 CANDIDATE EXPERIENCES (JSON):
@@ -118,9 +154,17 @@ Return ONLY a valid JSON array of objects with this schema:
         """Select relevant skills grouped by category, formatted in HTML spans for PDF."""
         skills_json = json.dumps(self.profile['skills'], ensure_ascii=False, indent=2)
 
-        prompt = f"""You are a resume writing expert.
+        lang = self.locale
+        header = {
+            'en': 'You are a resume writing expert.',
+            'fr': 'Vous êtes un expert en rédaction de CV.',
+            'es': 'Eres un experto en redacción de CV.',
+        }[lang]
+        section_offer = {'en': 'JOB OFFER:', 'fr': "OFFRE D'EMPLOI:", 'es': 'OFERTA DE EMPLEO:'}[lang]
 
-JOB OFFER:
+        prompt = f"""{header}
+
+{section_offer}
 {offer}
 
 CANDIDATE SKILLS:
@@ -213,12 +257,17 @@ Return ONLY this exact HTML-like format:
         content.append(Spacer(1, 8))
 
         # Profile
-        content.append(Paragraph("<b>Profile</b>", style_section))
+        section_labels = {
+            'en': {"profile": "Profile", "experience": "Professional Experience", "skills": "Skills", "education": "Education", "languages": "Languages", "interests": "Interests"},
+            'fr': {"profile": "Profil", "experience": "Expérience Professionnelle", "skills": "Compétences", "education": "Formation", "languages": "Langues", "interests": "Centre d'intérêts"},
+            'es': {"profile": "Perfil", "experience": "Experiencia Profesional", "skills": "Competencias", "education": "Educación", "languages": "Idiomas", "interests": "Intereses"},
+        }[self.locale]
+        content.append(Paragraph(f"<b>{section_labels['profile']}</b>", style_section))
         content.append(Paragraph(adapted_profile, style_normal))
         content.append(Spacer(1, 10))
 
         # Experiences
-        content.append(Paragraph("<b>Professional Experience</b>", style_section))
+        content.append(Paragraph(f"<b>{section_labels['experience']}</b>", style_section))
         for exp in experiences:
             exp_title = f"<b>{exp['company']} – {exp['location']}</b> | {exp['role']} ({exp['dates']})"
             content.append(Paragraph(exp_title, style_experience))
@@ -228,24 +277,24 @@ Return ONLY this exact HTML-like format:
             content.append(Spacer(1, 8))
 
         # Skills
-        content.append(Paragraph("<b>Skills</b>", style_section))
+        content.append(Paragraph(f"<b>{section_labels['skills']}</b>", style_section))
         content.append(Paragraph(skills, style_normal))
         content.append(Spacer(1, 10))
 
         # Education
-        content.append(Paragraph("<b>Education</b>", style_section))
+        content.append(Paragraph(f"<b>{section_labels['education']}</b>", style_section))
         content.append(Paragraph(self.profile['education'], style_normal))
         content.append(Spacer(1, 10))
 
         # Languages
-        content.append(Paragraph("<b>Languages</b>", style_section))
+        content.append(Paragraph(f"<b>{section_labels['languages']}</b>", style_section))
         languages_text = " • ".join(self.profile['languages'])
         content.append(Paragraph(languages_text, style_normal))
 
         # Interests
         if 'interests' in self.profile and self.profile['interests']:
             content.append(Spacer(1, 10))
-            content.append(Paragraph("<b>Interests</b>", style_section))
+            content.append(Paragraph(f"<b>{section_labels['interests']}</b>", style_section))
             if isinstance(self.profile['interests'], list):
                 interests_text = ", ".join(self.profile['interests'])
             else:
